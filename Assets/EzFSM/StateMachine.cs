@@ -47,8 +47,11 @@ public abstract class StateMachine : MonoBehaviour
         }
         else
         {
-            currentSID = targetID;
-            currentS = target;
+            if (stateList.Count == 0)
+            {
+                currentSID = targetID;
+                currentS = target;
+            }
 
             stateList.Add(targetID, target);
         }
@@ -97,5 +100,12 @@ public abstract class StateMachine : MonoBehaviour
                 }
             }
         }
+    }
+
+    void OnDestory()
+    {
+        stateList.Clear();
+        currentS = null;
+        currentSID = "";
     }
 }
