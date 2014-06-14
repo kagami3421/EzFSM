@@ -2,6 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 
+/*
+ * State Machine Class , only for inheriting
+ * Author : Kagami
+*/
+
 public abstract class StateMachine : MonoBehaviour
 {
     private Dictionary<string, State> stateList = new Dictionary<string, State>();
@@ -23,6 +28,12 @@ public abstract class StateMachine : MonoBehaviour
         }
     }
     private State currentS;
+
+    public void InitFSM()
+    {
+        if (currentS != null)
+            currentS.Enter(this.gameObject);
+    }
 
     void FixedUpdate()
     {

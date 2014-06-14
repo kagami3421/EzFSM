@@ -2,6 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 
+/*
+ * State Class and Transition Class
+ * Author : Kagami
+*/
+
 public abstract class State
 {
     private Dictionary<string, Transition> transList = new Dictionary<string, Transition>();

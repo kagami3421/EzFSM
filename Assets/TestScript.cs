@@ -14,11 +14,14 @@ public class TestScript : StateMachine
         IdleBall idle = new IdleBall();
         MovingBall moving = new MovingBall();
 
+
         idle.AddTransition(moving, "GoToMove");
         moving.AddTransition(idle, "GoToIdle");
 
         AddState(idle, "Idle");
         AddState(moving, "Moving");
+
+        InitFSM();
 	}
 	
 	void Update ()
