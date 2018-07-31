@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 
 /*
@@ -7,116 +6,84 @@ using System.Collections.Generic;
  * Author : Kagami
 */
 
-public abstract class StateMachine : MonoBehaviour
+namespace Kagami.EasyFSM
 {
-    private Dictionary<string, State> stateList = new Dictionary<string, State>();
-
-    public string currentStateID
+    public abstract class StateMachine : MonoBehaviour
     {
-        get
+        private State currentState;
+        private Dictionary<string, State> states = new Dictionary<string, State>();
+
+        protected void Start()
         {
-            return currentSID;
-        }
-    }
-    private string currentSID;
+            InitFSM();
 
-    public State CurrentState
-    {
-        get
-        {
-            return currentS;
-        }
-    }
-    private State currentS;
-
-    public void InitFSM()
-    {
-        if (currentS != null)
-            currentS.Enter(this.gameObject);
-    }
-
-    void FixedUpdate()
-    {
-        //Debug.Log(currentS);
-        if (currentS != null)
-            currentS.Stay(this.gameObject);
-    }
-
-    public void AddState(State target, string targetID)
-    {
-        if (target == null)
-        {
-            Debug.LogError("Don't assign bullshit null guy!");
-            return;
+            if(currentState != null)
+                currentState.Enter();
         }
 
-        State _tmpState;
-        if (stateList.TryGetValue(targetID, out _tmpState))
+        protected void FixedUpdate()
         {
-            Debug.LogError("Already have state which be added.");
-            return;
-        }
-        else
-        {
-            if (stateList.Count == 0)
+            if (currentState == null)
+                return;
+
+            State nextState = currentState.Stay();
+            if (nextState != null)
             {
-                currentSID = targetID;
-                currentS = target;
-            }
-
-            stateList.Add(targetID, target);
-        }
-    }
-
-    public void RemoveState(string targetID)
-    {
-        State _remove;
-        if (stateList.TryGetValue(targetID, out _remove))
-        {
-            stateList.Remove(targetID);
-        }
-        else
-        {
-            Debug.LogError("Can't find state which be deleted.");
-        }
-    }
-
-    public void ChangeState(string TransitionID)
-    {
-        if (TransitionID.Length == 0)
-        {
-            Debug.LogError("Empty string!");
-            return;
-        }
-
-        Transition _tmp = currentS.GetTransition(TransitionID);
-
-        if (_tmp.Destination == null)
-        {
-            Debug.LogError("Can't find suitable transition!");
-        }
-        else
-        {
-            foreach (KeyValuePair<string, State> e in stateList)
-            {
-                if (e.Value == _tmp.Destination)
-                {
-                    currentS.Exit(this.gameObject);
-
-                    currentS = _tmp.Destination;
-
-                    currentS.Enter(this.gameObject);
-
-                    break;
-                }
+                currentState.Exit();
+                currentState = nextState;
+                nextState.Enter();
             }
         }
-    }
 
-    void OnDestory()
-    {
-        stateList.Clear();
-        currentS = null;
-        currentSID = "";
+        /// <summary>
+        /// Init State Machine
+        /// </summary>
+        public virtual void InitFSM()
+        {
+
+        }
+
+        protected void AddState(string Name , State state , bool defaultState)
+        {
+            if (states.ContainsKey(Name))
+                Debug.LogErrorFormat("State: {0} Is Exist!", Name);
+            else
+            {
+                states.Add(Name, state);
+
+                if(defaultState)
+                    currentState = state;
+            }
+        }
+
+        /// <summary>
+        /// Get State by Name
+        /// </summary>
+        public State GetState(string StateName)
+        {
+            if (states.ContainsKey(StateName))
+                return states[StateName];
+            else
+            {
+                Debug.LogErrorFormat("State: {0} Not Found!", StateName);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Force Change State from AnyState
+        /// </summary>
+        public void ForceChangeState(string StateName)
+        {
+            State nextState = null;
+            if (states.TryGetValue(StateName, out nextState))
+            {
+                currentState.Exit();
+                currentState = nextState;
+                nextState.Enter();
+            }
+            else
+                Debug.LogErrorFormat("State: {0} Not Found!", StateName);
+        }
     }
 }
